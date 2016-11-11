@@ -62,16 +62,16 @@ namespace D3D11._1.Application
             axisLines.Initialize(this);
 
             // Create and Initialize the axis lines renderer
-            //var triangle = ToDispose(new TriangleRenderer());
-            ////triangle.Initialize(this);
+            var triangle = ToDispose(new TriangleRenderer());
+            triangle.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
-            //var quad = ToDispose(new QuadRenderer());
-            ////quad.Initialize(this);
+            var quad = ToDispose(new QuadRenderer());
+            quad.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
-            //var sphere = ToDispose(new QuadricRenderer());
-            ////sphere.Initialize(this);
+            var sphere = ToDispose(new SphereRenderer(Vector3.Zero, 5));
+            sphere.Initialize(this);
 
             //// FPS renderer
             //var fps = ToDispose(new FpsRenderer());
@@ -103,10 +103,10 @@ namespace D3D11._1.Application
                 DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
 
                 // Render our primitives
-                axisLines.Render();
+                //axisLines.Render();
                 //triangle.Render();
                 //quad.Render();
-                //sphere.Render();
+                sphere.Render();
 
                 //// FPS renderer
                 //fps.Render();
