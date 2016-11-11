@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Buffer = SharpDX.Direct3D11.Buffer;
 
-namespace D3D11._1.Application
+namespace Applying_Textures.Application
 {
     interface Itransformable
     {
@@ -18,7 +18,7 @@ namespace D3D11._1.Application
         Matrix P { get; }
         Matrix N { get; }
     }
-    abstract class PrimitivesRenderer:RendererBase, Itransformable
+    abstract class PrimitivesRenderer : RendererBase, Itransformable
     {
         // Vertex buffer
         protected Buffer buffer_;

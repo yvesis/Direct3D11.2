@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "D3D11.1", "D3D11.1\D3D11.1.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{939D8319-6E32-4700-BE9F-C1D079F57DDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Applying Textures", "Applying Textures\Applying Textures.csproj", "{EE5E5536-24FF-4145-836B-FBF2161713A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{939D8319-6E32-4700-BE9F-C1D079F57DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{939D8319-6E32-4700-BE9F-C1D079F57DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{939D8319-6E32-4700-BE9F-C1D079F57DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE5E5536-24FF-4145-836B-FBF2161713A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE5E5536-24FF-4145-836B-FBF2161713A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE5E5536-24FF-4145-836B-FBF2161713A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE5E5536-24FF-4145-836B-FBF2161713A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,7 +17,7 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 using Common;
 using System.Windows.Forms;
 using SharpDX.Windows;
-namespace D3D11._1.Application
+namespace Applying_Textures.Application
 {
     public class D3DApp : D3DApplicationDesktop
     {
@@ -60,7 +60,8 @@ namespace D3D11._1.Application
         /// Constructor
         /// </summary>
         /// <param name="window">The winform</param>
-        public D3DApp(Form window, bool showFps= true, bool showText=true):base(window)
+        public D3DApp(Form window, bool showFps = true, bool showText = true)
+            : base(window)
         {
             ShowFPS = showFps;
             ShowText = showText;
@@ -124,16 +125,16 @@ namespace D3D11._1.Application
             }
 
             InitializeMatricies();
-            Window.Resize+=Window_Resize;
+            Window.Resize += Window_Resize;
             Window.KeyDown += Window_KeyDown;
-            Window.KeyUp+=Window_KeyUp;
-            Window.MouseWheel+=Window_MouseWheel;
+            Window.KeyUp += Window_KeyUp;
+            Window.MouseWheel += Window_MouseWheel;
             RenderLoop.Run(Window, () =>
             {
                 // Clear DSV
-                DeviceManager.Direct3DContext.ClearDepthStencilView(DepthStencilView, 
+                DeviceManager.Direct3DContext.ClearDepthStencilView(DepthStencilView,
                                                                     DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil,
-                                                                    1.0f,0);
+                                                                    1.0f, 0);
                 // Clear RTV
                 DeviceManager.Direct3DContext.ClearRenderTargetView(RenderTargetView, Color.White);
 
@@ -142,7 +143,7 @@ namespace D3D11._1.Application
 
                 // MVP
                 var MVP = M * VP;
-                
+
                 // Must transpose to use in HLSL
                 MVP.Transpose();
 
@@ -177,32 +178,32 @@ namespace D3D11._1.Application
         }
         void Window_MouseWheel(object sender, MouseEventArgs e)
         {
-                if (shiftKey)
-                {
-                    // Zoom in/out
-                    V.TranslationVector -= new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor * 2);
-                }
-                else
-                {
-                    // rotate around Z-axis
-                    V *= Matrix.RotationZ((e.Delta / 120f) * moveFactor);
-                    rotation += new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor);
-                }
-                if (ShowText)
-                    UpdateText();
+            if (shiftKey)
+            {
+                // Zoom in/out
+                V.TranslationVector -= new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor * 2);
+            }
+            else
+            {
+                // rotate around Z-axis
+                V *= Matrix.RotationZ((e.Delta / 120f) * moveFactor);
+                rotation += new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor);
+            }
+            if (ShowText)
+                UpdateText();
         }
 
         void Window_KeyUp(object sender, KeyEventArgs e)
         {
-                // Clear the shift/ctrl keys so they aren't sticky
-                if (e.KeyCode == Keys.ShiftKey)
-                    shiftKey = false;
-                if (e.KeyCode == Keys.ControlKey)
-                    ctrlKey = false;
+            // Clear the shift/ctrl keys so they aren't sticky
+            if (e.KeyCode == Keys.ShiftKey)
+                shiftKey = false;
+            if (e.KeyCode == Keys.ControlKey)
+                ctrlKey = false;
         }
         float moveFactor = 0.02f; // how much to change on each keypress
-        bool shiftKey =false;
-        bool ctrlKey=false;
+        bool shiftKey = false;
+        bool ctrlKey = false;
         bool useDepthShaders = false;
 
         Vector3 rotation = Vector3.Zero;
@@ -341,18 +342,20 @@ namespace D3D11._1.Application
 
             depthStencilState = ToDispose(new DepthStencilState(device, new DepthStencilStateDescription
             {
-                IsDepthEnabled=true,
+                IsDepthEnabled = true,
                 DepthComparison = Comparison.Less,
                 DepthWriteMask = DepthWriteMask.All,
-                IsStencilEnabled =false,
-                StencilReadMask =0xff, // no mask
-                StencilWriteMask =0xff,
+                IsStencilEnabled = false,
+                StencilReadMask = 0xff, // no mask
+                StencilWriteMask = 0xff,
                 // Face culling
-                FrontFace = new DepthStencilOperationDescription { 
-                    Comparison = Comparison.Always, 
-                    PassOperation = StencilOperation.Keep, 
-                    DepthFailOperation = StencilOperation.Increment, 
-                    FailOperation= StencilOperation.Keep},
+                FrontFace = new DepthStencilOperationDescription
+                {
+                    Comparison = Comparison.Always,
+                    PassOperation = StencilOperation.Keep,
+                    DepthFailOperation = StencilOperation.Increment,
+                    FailOperation = StencilOperation.Keep
+                },
 
                 BackFace = new DepthStencilOperationDescription
                 {

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Buffer = SharpDX.Direct3D11.Buffer;
-namespace D3D11._1.Application
+namespace Applying_Textures.Application
 {
-    class QuadRenderer:PrimitivesRenderer
+    class QuadRenderer : PrimitivesRenderer
     {
         // The quad index buffer
         Buffer quadIndices;
