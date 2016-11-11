@@ -25,13 +25,13 @@ namespace D3D11._1.Application
         {
             Random rnd = new Random();
             vertices_ =  new List<Vector4>();
-            for (var theta = 0; theta <= 180; theta++)
-                for (var phi = 0; phi <360 ; phi++)
+            for (var theta = 0; theta <=180; theta++)
+                for (var phi = 0; phi <=360 ; phi++)
                 {
                     var x=radius_ * Math.Sin(theta * Math.PI / 180) * Math.Cos(phi * Math.PI / 180);
                     var y=radius_ * Math.Sin(theta * Math.PI / 180) * Math.Sin(phi * Math.PI / 180);
                     var z=radius_ * Math.Cos(theta * Math.PI / 180) ;
-                    vertices_.AddRange(new[] { new Vector4((float)x, (float)y, (float)z, 1f), new Vector4(rnd.NextFloat(0.1f, 0.5f), rnd.NextFloat(0.1f, 0.5f), rnd.NextFloat(0.1f, 0.5f), 1) }); //new Vector4(phi%2, theta%2, Math.Abs(phi-theta)%2, 1)
+                    vertices_.AddRange(new[] { new Vector4((float)x, (float)y, (float)z, 1f), new Vector4(rnd.NextFloat(0.1f, 0.5f), 0, 0, 1) }); //new Vector4(phi%2, theta%2, Math.Abs(phi-theta)%2, 1)
 
                 }
             

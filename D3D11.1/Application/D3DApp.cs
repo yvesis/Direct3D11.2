@@ -42,19 +42,39 @@ namespace D3D11._1.Application
         //Depth Stencil state
         DepthStencilState depthStencilState;
 
+        // A vertex shader that gives depth info to pixel shader
+        ShaderBytecode depthVertexShaderBytecode;
+        VertexShader depthVertexShader;
+
+        // A pixel shader that renders the depth (black closer, white further away)
+        ShaderBytecode depthPixelShaderBytecode;
+        PixelShader depthPixelShader;
+
 
         // Matricies
 
         Matrix M, V, P;
+
+        Action UpdateText;
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="window">The winform</param>
-        public D3DApp(Form window):base(window)
+        public D3DApp(Form window, bool showFps= true, bool showText=true):base(window)
         {
-
+            ShowFPS = showFps;
+            ShowText = showText;
         }
-
+        public bool ShowFPS
+        {
+            get;
+            private set;
+        }
+        public bool ShowText
+        {
+            get;
+            private set;
+        }
         public override void Run()
         {
             // Create and Initialize the axis lines renderer
@@ -74,13 +94,40 @@ namespace D3D11._1.Application
             sphere.Initialize(this);
 
             //// FPS renderer
-            //var fps = ToDispose(new FpsRenderer());
+            FpsRenderer fps = null;
+            if (ShowFPS)
+            {
+                fps = ToDispose(new Common.FpsRenderer("Calibri", Color.CornflowerBlue, new Point(8, 8), 16));
+                fps.Initialize(this);
+            }
 
             //// Text renderer
-            //var textRenderer = ToDispose(new Common.TextRenderer());
+            Common.TextRenderer textRenderer = null;
+            if (ShowText)
+            {
+                textRenderer = ToDispose(new Common.TextRenderer("Calibri", Color.CornflowerBlue, new Point(8, 30), 12));
+                textRenderer.Initialize(this);
+
+                UpdateText = () =>
+                {
+                    textRenderer.Text =
+                        String.Format("World rotation ({0}) (Up/Down Left/Right Wheel+-)\nView ({1}) (A/D, W/S, Shift+Wheel+-)"
+                        + "\nPress X to reinitialize the device and resources (device ptr: {2})"
+                        + "\nPress Z to show/hide depth buffer",
+                            rotation,
+                            V.TranslationVector,
+                            DeviceManager.Direct3DDevice.NativePointer);
+                };
+
+                UpdateText();
+
+            }
+
             InitializeMatricies();
             Window.Resize+=Window_Resize;
-
+            Window.KeyDown += Window_KeyDown;
+            Window.KeyUp+=Window_KeyUp;
+            Window.MouseWheel+=Window_MouseWheel;
             RenderLoop.Run(Window, () =>
             {
                 // Clear DSV
@@ -114,18 +161,113 @@ namespace D3D11._1.Application
                 sphere.RotationAngles = v;
                 triangle.Render();
 
-                //// FPS renderer
-                //fps.Render();
+                // FPS renderer
+                if (fps != null)
+                    fps.Render();
 
                 // Text renderer
-
-                //textRenderer.Render();
+                if (textRenderer != null)
+                    textRenderer.Render();
 
                 Present();
             });
 
 
 
+        }
+        void Window_MouseWheel(object sender, MouseEventArgs e)
+        {
+                if (shiftKey)
+                {
+                    // Zoom in/out
+                    V.TranslationVector -= new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor * 2);
+                }
+                else
+                {
+                    // rotate around Z-axis
+                    V *= Matrix.RotationZ((e.Delta / 120f) * moveFactor);
+                    rotation += new Vector3(0f, 0f, (e.Delta / 120f) * moveFactor);
+                }
+                if (ShowText)
+                    UpdateText();
+        }
+
+        void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+                // Clear the shift/ctrl keys so they aren't sticky
+                if (e.KeyCode == Keys.ShiftKey)
+                    shiftKey = false;
+                if (e.KeyCode == Keys.ControlKey)
+                    ctrlKey = false;
+        }
+        float moveFactor = 0.02f; // how much to change on each keypress
+        bool shiftKey =false;
+        bool ctrlKey=false;
+        bool useDepthShaders = false;
+
+        Vector3 rotation = Vector3.Zero;
+
+        void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            shiftKey = e.Shift;
+            ctrlKey = e.Control;
+
+            switch (e.KeyCode)
+            {
+                // WASD -> pans view
+                case Keys.A:
+                    V.TranslationVector += new Vector3(moveFactor * 2, 0f, 0f);
+                    break;
+                case Keys.D:
+                    V.TranslationVector -= new Vector3(moveFactor * 2, 0f, 0f);
+                    break;
+                case Keys.S:
+                    V.TranslationVector += new Vector3(0f, shiftKey ? moveFactor * 2 : 0, shiftKey ? 0f : moveFactor * 2);
+                    break;
+                case Keys.W:
+                    V.TranslationVector -= new Vector3(0f, shiftKey ? moveFactor * 2 : 0, shiftKey ? 0f : moveFactor * 2);
+                    break;
+                // Up/Down and Left/Right - rotates around X / Y respectively
+                // (Mouse wheel rotates around Z)
+                case Keys.Down:
+                    M *= Matrix.RotationX(-moveFactor);
+                    rotation -= new Vector3(moveFactor, 0f, 0f);
+                    break;
+                case Keys.Up:
+                    M *= Matrix.RotationX(moveFactor);
+                    rotation += new Vector3(moveFactor, 0f, 0f);
+                    break;
+                case Keys.Left:
+                    M *= Matrix.RotationY(-moveFactor);
+                    rotation -= new Vector3(0f, moveFactor, 0f);
+                    break;
+                case Keys.Right:
+                    M *= Matrix.RotationY(moveFactor);
+                    rotation += new Vector3(0f, moveFactor, 0f);
+                    break;
+
+                case Keys.X:
+                    // To test for correct resource recreation
+                    // Simulate device reset or lost.
+                    System.Diagnostics.Debug.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+                    DeviceManager.Initialize(DeviceManager.Dpi);
+                    System.Diagnostics.Debug.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+                    break;
+                case Keys.Z:
+                    var context = DeviceManager.Direct3DContext;
+                    useDepthShaders = !useDepthShaders;
+                    if (useDepthShaders)
+                    {
+                        context.VertexShader.Set(depthVertexShader);
+                        context.PixelShader.Set(depthPixelShader);
+                    }
+                    else
+                    {
+                        context.VertexShader.Set(vsShader);
+                        context.PixelShader.Set(psShader);
+                    }
+                    break;
+            }
         }
 
         private void Window_Resize(object sender, EventArgs e)
@@ -168,6 +310,13 @@ namespace D3D11._1.Application
             // Compile and create ps shader 
             psByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/Simple.hlsl", "PSMain", "ps_5_0", flag));
             psShader = ToDispose(new PixelShader(device, psByteCode));
+
+            // Compile and create the depth vertex and pixel shaders
+            // These shaders are for checking what the depth buffer should look like
+            //depthVertexShaderBytecode = ToDispose(ShaderBytecode.CompileFromFile("Depth.hlsl", "VSMain", "vs_5_0", flag));
+            //depthVertexShader = ToDispose(new VertexShader(device, depthVertexShaderBytecode));
+            //depthPixelShaderBytecode = ToDispose(ShaderBytecode.CompileFromFile("Depth.hlsl", "PSMain", "ps_5_0", flag));
+            //depthPixelShader = ToDispose(new PixelShader(device, depthPixelShaderBytecode));
 
             // Initialize vertex layout to match vs input structure
             // Input structure definition
