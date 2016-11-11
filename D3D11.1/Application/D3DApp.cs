@@ -70,7 +70,7 @@ namespace D3D11._1.Application
             quad.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
-            var sphere = ToDispose(new SphereRenderer(Vector3.Zero, 5));
+            var sphere = ToDispose(new SphereRenderer(Vector3.Zero, .25f));
             sphere.Initialize(this);
 
             //// FPS renderer
@@ -103,10 +103,16 @@ namespace D3D11._1.Application
                 DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
 
                 // Render our primitives
-                //axisLines.Render();
-                //triangle.Render();
-                //quad.Render();
+                axisLines.Render();
+                quad.Render();
+                MVP = sphere.M * VP;
+                MVP.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
                 sphere.Render();
+                var v = sphere.RotationAngles;
+                v.Y += 0.016f;
+                sphere.RotationAngles = v;
+                triangle.Render();
 
                 //// FPS renderer
                 //fps.Render();
@@ -249,6 +255,8 @@ namespace D3D11._1.Application
         protected override void CreateSizeDependentResources(D3DApplicationBase app)
         {
             base.CreateSizeDependentResources(app);
+            InitializeMatricies();
+
         }
     }
 }

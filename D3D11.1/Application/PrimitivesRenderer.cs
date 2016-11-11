@@ -10,7 +10,15 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace D3D11._1.Application
 {
-    abstract class PrimitivesRenderer:RendererBase
+    interface Itransformable
+    {
+        Vector3 RotationAngles { get; set; }
+        Matrix M { get; }
+        Matrix V { get; }
+        Matrix P { get; }
+        Matrix N { get; }
+    }
+    abstract class PrimitivesRenderer:RendererBase, Itransformable
     {
         // Vertex buffer
         protected Buffer buffer_;
@@ -46,5 +54,35 @@ namespace D3D11._1.Application
             context.Draw(PrimitiveCount, 0);
         }
 
+        /// <summary>
+        /// World or model matrix
+        /// </summary>
+        public Matrix M
+        {
+            get { return Matrix.Identity; }
+        }
+        /// <summary>
+        /// View matrix
+        /// </summary>
+        public Matrix V
+        {
+            get { return Matrix.Identity; }
+        }
+        /// <summary>
+        /// Projection Matrix
+        /// </summary>
+        public Matrix P
+        {
+            get { return Matrix.Identity; }
+        }
+        /// <summary>
+        /// Normal matrix
+        /// </summary>
+        public Matrix N
+        {
+            get { return Matrix.Identity; }
+        }
+
+        public Vector3 RotationAngles { get; set; }
     }
 }

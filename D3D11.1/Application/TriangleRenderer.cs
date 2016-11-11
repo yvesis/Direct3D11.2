@@ -31,5 +31,9 @@ namespace D3D11._1.Application
         {
             get { return SharpDX.Direct3D.PrimitiveTopology.TriangleList; }
         }
+        public new Matrix M
+        {
+            get { return Matrix.RotationY(90 * 0.016f); }
+        }
     }
 }
