@@ -42,11 +42,10 @@ namespace Applying_Textures.Application
                 0f, 0f, 1f, 1f,         0.859f, 0.976f,
                 0f, 0.05f, 0.9f, 1f,    0.859f, 0.976f,
                 0f, 0f, 1f, 1f,         0.859f, 0.976f,  // arrow head end
-
             };
             buffer_ = ToDispose(Buffer.Create(device, BindFlags.VertexBuffer, data));
-            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<Vector4>() * 2, 0);
-            PrimitiveCount = data.Length / 2;
+            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<float>() * 6, 0);
+            PrimitiveCount = data.Length / 6;// sizeof(float);
         }
         protected override int PrimitiveCount
         {
@@ -57,18 +56,5 @@ namespace Applying_Textures.Application
         {
             get { return SharpDX.Direct3D.PrimitiveTopology.LineList; }
         }
-        //protected override void DoRender()
-        //{
-        //    var context = DeviceManager.Direct3DContext;
-
-        //    // Tell IA to use lines
-        //    context.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.LineList;
-
-        //    // Pass the lines vertices
-        //    context.InputAssembler.SetVertexBuffers(0, vertexBinding_);
-
-        //    // Draw our xyz axis : 18 vertices
-        //    context.Draw(18, 0);
-        //}
     }
 }

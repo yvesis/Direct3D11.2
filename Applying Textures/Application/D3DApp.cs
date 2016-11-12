@@ -56,6 +56,7 @@ namespace Applying_Textures.Application
         Matrix M, V, P;
 
         Action UpdateText;
+        int lastX, lastY;
         /// <summary>
         /// Constructor
         /// </summary>
@@ -79,19 +80,19 @@ namespace Applying_Textures.Application
         public override void Run()
         {
             // Create and Initialize the axis lines renderer
-            var axisLines = ToDispose(new AxisLinesRenderer());
+            var axisLines = ToDispose(new AxisLinesRenderer { TextureName = "Texture.png" });
             axisLines.Initialize(this);
 
             // Create and Initialize the axis lines renderer
-            var triangle = ToDispose(new TriangleRenderer());
+            var triangle = ToDispose(new TriangleRenderer { TextureName = "Texture2.png" });
             triangle.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
-            var quad = ToDispose(new QuadRenderer());
+            var quad = ToDispose(new QuadRenderer { TextureName = "Texture.png" });
             quad.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
-            var sphere = ToDispose(new SphereRenderer(Vector3.Zero, .25f));
+            var sphere = ToDispose(new SphereRenderer(Vector3.Zero, .25f) { TextureName = "Texture.png" });
             sphere.Initialize(this);
 
             //// FPS renderer
@@ -129,6 +130,9 @@ namespace Applying_Textures.Application
             Window.KeyDown += Window_KeyDown;
             Window.KeyUp += Window_KeyUp;
             Window.MouseWheel += Window_MouseWheel;
+            Window.MouseDown += Window_MouseDown;
+            Window.MouseMove += Window_MouseMove;
+            //sphere.Show = false;
             RenderLoop.Run(Window, () =>
             {
                 // Clear DSV
@@ -175,6 +179,32 @@ namespace Applying_Textures.Application
 
 
 
+        }
+
+        void Window_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                var yRotate = lastX - e.X;
+                var xRotate = lastY - e.Y;
+                lastY = e.Y;
+                lastX = e.X;
+
+                // Mouse move changes 
+                V *= Matrix.RotationX(xRotate * moveFactor);
+                V *= Matrix.RotationY(yRotate * moveFactor);
+
+                UpdateText();
+            }
+        }
+
+        void Window_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                lastX = e.X;
+                lastY = e.Y;
+            }
         }
         void Window_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -332,7 +362,7 @@ namespace Applying_Textures.Application
                 // Color
                 //new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0),
                 // Texture coords
-                new InputElement("TEXCOORD0", 0,Format.R32G32_Float,16,0)
+                new InputElement("TEXCOORD", 0,Format.R32G32_Float,16,0)
             };
             vsLayout = ToDispose(new InputLayout(device, vsByteCode.GetPart(ShaderBytecodePart.InputSignatureBlob), input));
 

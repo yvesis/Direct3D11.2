@@ -48,9 +48,9 @@ namespace Applying_Textures.Application
             RemoveAndDispose(ref texture_);
 
             // Load texture
-            if(File.Exists(Path.Combine(TEXTUREFOLDER, TextureName)))
+            if(!string.IsNullOrWhiteSpace(TextureName) && File.Exists(Path.Combine(TEXTUREFOLDER, TextureName)))
             {
-                texture_ = ToDispose(ShaderResourceView.FromFile(DeviceManager.Direct3DDevice, TextureName));
+                texture_ = ToDispose(ShaderResourceView.FromFile(DeviceManager.Direct3DDevice, Path.Combine(TEXTUREFOLDER, TextureName)));
 
                 // Create sampler state
                 samplerState = ToDispose(new SamplerState(DeviceManager.Direct3DDevice, new SamplerStateDescription
