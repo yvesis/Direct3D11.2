@@ -38,6 +38,7 @@ namespace Applying_Textures.Application
         protected abstract SharpDX.Direct3D.PrimitiveTopology PrimitiveTopology { get; }
         protected abstract int PrimitiveCount { get; set; }
         public string TextureName { get; set; }
+
         protected override void CreateDeviceDependentResources()
         {
             base.CreateDeviceDependentResources();
@@ -48,6 +49,7 @@ namespace Applying_Textures.Application
             RemoveAndDispose(ref texture_);
 
             // Load texture
+            var test = File.Exists(Path.Combine(TEXTUREFOLDER, TextureName));
             if(!string.IsNullOrWhiteSpace(TextureName) && File.Exists(Path.Combine(TEXTUREFOLDER, TextureName)))
             {
                 texture_ = ToDispose(ShaderResourceView.FromFile(DeviceManager.Direct3DDevice, Path.Combine(TEXTUREFOLDER, TextureName)));

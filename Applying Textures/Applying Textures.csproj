@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Applying_Textures</RootNamespace>
     <AssemblyName>D3D11.1</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -63,6 +63,7 @@
     <Compile Include="Application\AxisLinesRenderer.cs" />
     <Compile Include="Application\D3DApp.cs" />
     <Compile Include="Application\PrimitivesRenderer.cs" />
+    <Compile Include="Application\Gazon.cs" />
     <Compile Include="Application\QuadRenderer.cs" />
     <Compile Include="Application\QuadricRenderer.cs" />
     <Compile Include="Application\TriangleRenderer.cs" />
@@ -104,7 +105,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Shaders\SimpleTexture2.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Shaders\SimpleTexture.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Textures\gazon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Textures\Texture.png">
@@ -116,6 +123,8 @@
     <Content Include="Textures\Texture2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Textures\uffizi_cross_LDR.bmp" />
+    <Content Include="Textures\uffizi_cross_LDR_diffuse.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

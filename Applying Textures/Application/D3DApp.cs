@@ -92,6 +92,10 @@ namespace Applying_Textures.Application
             quad.Initialize(this);
 
             //// Create and Initialize the axis lines renderer
+            var terrain = ToDispose(new Gazon { TextureName = "gazon.bmp" });
+            terrain.Initialize(this);
+
+            //// Create and Initialize the axis lines renderer
             var sphere = ToDispose(new SphereRenderer(Vector3.Zero, .25f) { TextureName = "Texture.png" });
             sphere.Initialize(this);
 
@@ -140,7 +144,7 @@ namespace Applying_Textures.Application
                                                                     DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil,
                                                                     1.0f, 0);
                 // Clear RTV
-                DeviceManager.Direct3DContext.ClearRenderTargetView(RenderTargetView, Color.White);
+                DeviceManager.Direct3DContext.ClearRenderTargetView(RenderTargetView, Color.DarkBlue);
 
                 // VP matrix
                 var VP = Matrix.Multiply(V, P);
@@ -157,6 +161,7 @@ namespace Applying_Textures.Application
                 // Render our primitives
                 axisLines.Render();
                 quad.Render();
+                terrain.Render();
                 MVP = sphere.M * VP;
                 MVP.Transpose();
                 DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
@@ -339,11 +344,11 @@ namespace Applying_Textures.Application
             var context = deviceManager.Direct3DContext;
 
             // Compile and create vs shader 
-            vsByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture.hlsl", "VSMain", "vs_5_0", flag));
+            vsByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture2.hlsl", "VSMain", "vs_5_0", flag));
             vsShader = ToDispose(new VertexShader(device, vsByteCode));
 
             // Compile and create ps shader 
-            psByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture.hlsl", "PSMain", "ps_5_0", flag));
+            psByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture2.hlsl", "PSMain", "ps_5_0", flag));
             psShader = ToDispose(new PixelShader(device, psByteCode));
 
             // Compile and create the depth vertex and pixel shaders

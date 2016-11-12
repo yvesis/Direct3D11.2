@@ -72,6 +72,13 @@ namespace Applying_Textures.Application
             context.InputAssembler.SetIndexBuffer(quadIndices, Format.R16_UInt, 0);
             // Pass in the quad vertices (note: only 4 vertices)
             context.InputAssembler.SetVertexBuffers(0, vertexBinding_);
+
+            //Set the shader texture resources
+            context.PixelShader.SetShaderResource(0, texture_);
+
+            // Set the sampler state
+            context.PixelShader.SetSampler(0, samplerState);
+
             // Draw the 6 vertices that make up the two triangles in the quad
             // using the vertex indices
             context.DrawIndexed(6, 0, 0);
