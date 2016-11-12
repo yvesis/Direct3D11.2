@@ -10,54 +10,6 @@ namespace Applying_Textures.Application
 {
     class AxisLinesRenderer : PrimitivesRenderer
     {
-        //// Vertex buffer for axis lines
-        //Buffer axisLinesVertices;
-
-        //// Binding structure to the vertex buffer
-        //VertexBufferBinding axisLinesBinding;
-
-        //protected override void CreateDeviceDependentResources()
-        //{
-        //    base.CreateDeviceDependentResources();
-
-        //    // Dispose before creating
-        //   // RemoveAndDispose(ref axisLinesBinding);
-
-        //    // The device
-        //    var device = DeviceManager.Direct3DDevice;
-
-        //    // Create vertex buffer for IA
-
-        //    // Create xyz axis : X red, Y green , Z blue
-        //    // data
-        //    var data = new []{
-
-        //    /*  Vertex Position                       Vertex Color */
-        //        new Vector4(-1f, 0f, 0f, 1f), (Vector4)Color.Red, // - x-axis 
-        //        new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,  // + x-axis
-        //        new Vector4(0.9f, -0.05f, 0f, 1f), (Vector4)Color.Red,// arrow head start
-        //        new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,
-        //        new Vector4(0.9f, 0.05f, 0f, 1f), (Vector4)Color.Red,
-        //        new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,  // arrow head end
-
-        //        new Vector4(0f, -1f, 0f, 1f), (Vector4)Color.Lime, // - y-axis
-        //        new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,  // + y-axis
-        //        new Vector4(-0.05f, 0.9f, 0f, 1f), (Vector4)Color.Lime,// arrow head start
-        //        new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,
-        //        new Vector4(0.05f, 0.9f, 0f, 1f), (Vector4)Color.Lime,
-        //        new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,  // arrow head end
-
-        //        new Vector4(0f, 0f, -1f, 1f), (Vector4)Color.Blue, // - z-axis
-        //        new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,  // + z-axis
-        //        new Vector4(0f, -0.05f, 0.9f, 1f), (Vector4)Color.Blue,// arrow head start
-        //        new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,
-        //        new Vector4(0f, 0.05f, 0.9f, 1f), (Vector4)Color.Blue,
-        //        new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,  // arrow head end
-
-        //    };
-        //    //axisLinesVertices = ToDispose(Buffer.Create(device, BindFlags.VertexBuffer, data));
-        //    //axisLinesBinding = new VertexBufferBinding(axisLinesVertices, Utilities.SizeOf<Vector4>() * 2, 0);
-        //}
         protected override void CreateVertexBinding()
         {
             var device = DeviceManager.Direct3DDevice;
@@ -68,27 +20,28 @@ namespace Applying_Textures.Application
             // data
             var data = new[]{
 
-            /*  Vertex Position                       Vertex Color */
-                new Vector4(-1f, 0f, 0f, 1f), (Vector4)Color.Red, // - x-axis 
-                new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,  // + x-axis
-                new Vector4(0.9f, -0.05f, 0f, 1f), (Vector4)Color.Red,// arrow head start
-                new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,
-                new Vector4(0.9f, 0.05f, 0f, 1f), (Vector4)Color.Red,
-                new Vector4(1f, 0f, 0f, 1f), (Vector4)Color.Red,  // arrow head end
-                    
-                new Vector4(0f, -1f, 0f, 1f), (Vector4)Color.Lime, // - y-axis
-                new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,  // + y-axis
-                new Vector4(-0.05f, 0.9f, 0f, 1f), (Vector4)Color.Lime,// arrow head start
-                new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,
-                new Vector4(0.05f, 0.9f, 0f, 1f), (Vector4)Color.Lime,
-                new Vector4(0f, 1f, 0f, 1f), (Vector4)Color.Lime,  // arrow head end
-                    
-                new Vector4(0f, 0f, -1f, 1f), (Vector4)Color.Blue, // - z-axis
-                new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,  // + z-axis
-                new Vector4(0f, -0.05f, 0.9f, 1f), (Vector4)Color.Blue,// arrow head start
-                new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,
-                new Vector4(0f, 0.05f, 0.9f, 1f), (Vector4)Color.Blue,
-                new Vector4(0f, 0f, 1f, 1f), (Vector4)Color.Blue,  // arrow head end
+            /*  Vertex Position         Texture UV */
+                                        // ~45x10
+                -1f, 0f, 0f, 1f,        0.1757f, 0.039f, // - x-axis 
+                1f, 0f, 0f, 1f,         0.1757f, 0.039f,  // + x-axis
+                0.9f, -0.05f, 0f, 1f,   0.1757f, 0.039f,// arrow head start
+                1f, 0f, 0f, 1f,         0.1757f, 0.039f,
+                0.9f, 0.05f, 0f, 1f,    0.1757f, 0.039f,
+                1f, 0f, 0f, 1f,         0.1757f, 0.039f,  // arrow head end
+                                        // ~135x35
+                0f, -1f, 0f, 1f,        0.5273f, 0.136f, // - y-axis
+                0f, 1f, 0f, 1f,         0.5273f, 0.136f,  // + y-axis
+                -0.05f, 0.9f, 0f, 1f,   0.5273f, 0.136f,// arrow head start
+                0f, 1f, 0f, 1f,         0.5273f, 0.136f,
+                0.05f, 0.9f, 0f, 1f,    0.5273f, 0.136f,
+                0f, 1f, 0f, 1f,         0.5273f, 0.136f,  // arrow head end
+                                        // ~220x250
+                0f, 0f, -1f, 1f,        0.859f, 0.976f, // - z-axis
+                0f, 0f, 1f, 1f,         0.859f, 0.976f,  // + z-axis
+                0f, -0.05f, 0.9f, 1f,   0.859f, 0.976f,// arrow head start
+                0f, 0f, 1f, 1f,         0.859f, 0.976f,
+                0f, 0.05f, 0.9f, 1f,    0.859f, 0.976f,
+                0f, 0f, 1f, 1f,         0.859f, 0.976f,  // arrow head end
 
             };
             buffer_ = ToDispose(Buffer.Create(device, BindFlags.VertexBuffer, data));

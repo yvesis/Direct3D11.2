@@ -1,3 +1,10 @@
+//Type	Register Description
+//b	Constant buffer
+//t	Texture and texture buffer
+//c	Buffer offset
+//s	Sampler
+//u	Unordered Access View
+
 //Constant buffer by application frame
 
 cbuffer PerObject:register(b0)
@@ -7,12 +14,16 @@ cbuffer PerObject:register(b0)
 	float4x4 MVP;
 };
 
+// Global for texture sampling
+Texture2D shaderTexture:register(t0);
+SamplerState Sampler:register(s0);
+
 // VS input structure
 
 struct VertexShaderInput
 {
 	float4 Position: SV_Position;
-	float4 Color: COLOR;
+	float2 TextureUV: TEXCOORD0;
 };
 
 //VS output structure
@@ -20,7 +31,7 @@ struct VertexShaderInput
 struct VertexShaderOutput
 {
 	float4 Position: SV_Position;
-	float4 Color : COLOR;
+	float2 TextureUV : TEXCOORD0;
 };
 
 //VS main function
@@ -33,7 +44,7 @@ VertexShaderOutput VSMain(VertexShaderInput input)
 	output.Position = mul(input.Position, MVP);
 
 	// Pass through the color
-	output.Color = input.Color;
+	output.TextureUV = input.TextureUV;
 
 	return output;
 }
@@ -41,5 +52,5 @@ VertexShaderOutput VSMain(VertexShaderInput input)
 //PS shader main function
 float4 PSMain(VertexShaderOutput input) : SV_Target
 {
-	return input.Color;
+	return shaderTexture.Sample(Sampler,input.TextureUV);
 }

@@ -309,11 +309,11 @@ namespace Applying_Textures.Application
             var context = deviceManager.Direct3DContext;
 
             // Compile and create vs shader 
-            vsByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/Simple.hlsl", "VSMain", "vs_5_0", flag));
+            vsByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture.hlsl", "VSMain", "vs_5_0", flag));
             vsShader = ToDispose(new VertexShader(device, vsByteCode));
 
             // Compile and create ps shader 
-            psByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/Simple.hlsl", "PSMain", "ps_5_0", flag));
+            psByteCode = ToDispose(ShaderBytecode.CompileFromFile("Shaders/SimpleTexture.hlsl", "PSMain", "ps_5_0", flag));
             psShader = ToDispose(new PixelShader(device, psByteCode));
 
             // Compile and create the depth vertex and pixel shaders
@@ -330,7 +330,9 @@ namespace Applying_Textures.Application
                 // Position
                 new InputElement("SV_Position",0,Format.R32G32B32A32_Float,0,0),
                 // Color
-                new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0),
+                //new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0),
+                // Texture coords
+                new InputElement("TEXCOORD0", 0,Format.R32G32_Float,16,0)
             };
             vsLayout = ToDispose(new InputLayout(device, vsByteCode.GetPart(ShaderBytecodePart.InputSignatureBlob), input));
 

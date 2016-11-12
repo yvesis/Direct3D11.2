@@ -13,13 +13,16 @@ namespace Applying_Textures.Application
         {
             var data = new[]
             {
-            /*  Vertex Position                       Vertex Color */
-                new Vector4(0.0f, 0.0f, 0.5f, 1.0f),  new Vector4(0.0f, 0.0f, 1.0f, 1.0f), // Base-right
-                new Vector4(-0.5f, 0.0f, 0.0f, 1.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f), // Base-left
-                new Vector4(-0.25f, 1f, 0.25f, 1.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f), // Apex
+            /*  Vertex Position             Vertex UV */
+                //0.0f, 0.0f, 0.5f, 1.0f,     1.0f, 1.0f, // Base-right
+                //-0.5f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, // Base-left
+                //-0.25f, 0.5f, 0.25f, 1.0f,    0.5f, 0.0f, // Apex
+                0.75f, -0.75f, -0.001f, 1.0f,    1.0f, 1.0f, // Base-right
+                -0.75f, -0.75f, -0.001f, 1.0f,   0.0f, 1.0f, // Base-left
+                0.0f, 0.75f, -0.001f, 1.0f,     0.5f, 0.0f, // Apex
             };
             buffer_ = ToDispose(Buffer.Create(DeviceManager.Direct3DDevice, BindFlags.VertexBuffer, data));
-            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<Vector4>() * 2, 0);
+            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<float>() * 6, 0);
             PrimitiveCount = data.Length / 2;
         }
         protected override int PrimitiveCount
@@ -34,6 +37,11 @@ namespace Applying_Textures.Application
         public new Matrix M
         {
             get { return Matrix.RotationY(90 * 0.016f); }
+        }
+        protected override void CreateDeviceDependentResources()
+        {
+            base.CreateDeviceDependentResources();
+
         }
     }
 }

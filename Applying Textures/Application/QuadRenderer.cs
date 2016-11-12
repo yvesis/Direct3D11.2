@@ -16,15 +16,19 @@ namespace Applying_Textures.Application
         {
             var data = new[]
             {
-            /*  Vertex Position                       Vertex Color */
-                new Vector4(0.25f, 0.5f, -0.5f, 1.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f), // Top-left
-                new Vector4(0.75f, 0.5f, -0.5f, 1.0f), new Vector4(1.0f, 1.0f, 0.0f, 1.0f), // Top-right
-                new Vector4(0.75f, 0.0f, -0.5f, 1.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f), // Base-right
-                new Vector4(0.25f, 0.0f, -0.5f, 1.0f), new Vector4(0.0f, 0.0f, 1.0f, 1.0f), // Base-left
+            /*  Vertex Position         texture UV */
+                //0.25f, 0.5f, -0.5f, 1.0f,   0.0f, 0.0f, // Top-left
+                //0.75f, 0.5f, -0.5f, 1.0f,   2.0f, 0.0f, // Top-right
+                //0.75f, 0.0f, -0.5f, 1.0f,   2.0f, 2.0f, // Base-right
+                //0.25f, 0.0f, -0.5f, 1.0f,   0.0f, 2.0f, // Base-left
+                -0.75f, 0.75f, 0f, 1.0f,     0.0f, 0.0f, // Top-left
+                0.75f, 0.75f, 0f, 1.0f,      2.0f, 0.0f, // Top-right
+                0.75f, -0.75f, 0f, 1.0f,     2.0f, 2.0f, // Base-right
+                -0.75f, -0.75f, 0f, 1.0f,    0.0f, 2.0f, // Base-left
             };
 
             buffer_ = ToDispose(Buffer.Create(DeviceManager.Direct3DDevice, BindFlags.VertexBuffer, data));
-            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<Vector4>() * 2, 0);
+            vertexBinding_ = new VertexBufferBinding(buffer_, Utilities.SizeOf<float>() * 6, 0);
 
             // v0    v1
             // |-----|
