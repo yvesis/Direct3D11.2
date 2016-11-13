@@ -34,7 +34,6 @@ namespace Lights_Materials.Application
 
             // Dispose before creating
             RemoveAndDispose(ref buffer_);
-            RemoveAndDispose(ref vertexBinding_);
 
             // Create buffer and binding
             CreateVertexBinding();

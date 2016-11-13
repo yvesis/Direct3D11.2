@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meshes", "Direct3D 11.11\Me
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lights_Materials", "Lights_Materials\Lights_Materials.csproj", "{E3EA4E1F-4224-4B92-9903-A2927C99F47B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skybox", "Skybox\Skybox.csproj", "{F5C5C937-44EE-4C04-A740-561CFAEEFE72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{E3EA4E1F-4224-4B92-9903-A2927C99F47B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3EA4E1F-4224-4B92-9903-A2927C99F47B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3EA4E1F-4224-4B92-9903-A2927C99F47B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5C5C937-44EE-4C04-A740-561CFAEEFE72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5C5C937-44EE-4C04-A740-561CFAEEFE72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5C5C937-44EE-4C04-A740-561CFAEEFE72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5C5C937-44EE-4C04-A740-561CFAEEFE72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

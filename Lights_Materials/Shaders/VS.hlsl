@@ -6,8 +6,10 @@ PixelShaderInput VSMain(VertexShaderInput vertex)
 
 	// Apply MVP
 	result.Position = mul(vertex.Position, MVP);
-	result.Diffuse = vertex.Color;
-	result.TextureUV = vertex.TextureUV;
+	result.Diffuse = vertex.Color* MaterialDiffuse;
+
+	//Apply material UV transformation
+	result.TextureUV = mul(float4(vertex.TextureUV.x, vertex.TextureUV.y, 0, 1), (float4x2)UVTransform).xy;
 
 	// Transform normal to world space
 	result.WorldNormal = mul(vertex.Normal, ITM);

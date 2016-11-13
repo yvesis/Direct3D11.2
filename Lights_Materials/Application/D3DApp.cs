@@ -17,39 +17,45 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 using Common;
 using System.Windows.Forms;
 using SharpDX.Windows;
+using System.Runtime.InteropServices;
 namespace Lights_Materials.Application
 {
     public class D3DApp : D3DApplicationDesktop
     {
         Texture2D texture2D;
 
-        //Vertex shader
-        ShaderBytecode vsByteCode;
+        #region shaders
+        // Vertex shader
         VertexShader vsShader;
-
-        //Pixel shader
-
-        ShaderBytecode psByteCode;
+        // Simple pixel shader
         PixelShader psShader;
+        // Depth pixel shader
+        PixelShader depthPixelShader;
+        // Lambert pixel shader
+        PixelShader diffuseShader;
+        // Phong pixel shader
+        PixelShader phongShader;
+        // Blinn-Phong pixel shader
+        PixelShader blinnShader;
 
+        #endregion
         //The vertex layout for IA
         InputLayout vsLayout;
 
 
         //A buffer to update the constant buffer
-        Buffer mvpBuffer;
+        Buffer perObjectcBuffer;
 
         //Depth Stencil state
         DepthStencilState depthStencilState;
 
-        // A vertex shader that gives depth info to pixel shader
-        ShaderBytecode depthVertexShaderBytecode;
-        VertexShader depthVertexShader;
 
-        // A pixel shader that renders the depth (black closer, white further away)
-        ShaderBytecode depthPixelShaderBytecode;
-        PixelShader depthPixelShader;
+        private Buffer perFramecBuffer;
+        private Buffer perMaterialcBuffer;
 
+        bool lightDirOn;
+        bool pointLightOn;
+        bool spotLightOn;
 
         // Matricies
 
@@ -78,6 +84,9 @@ namespace Lights_Materials.Application
         }
         public override void Run()
         {
+            InitializeMatricies();
+
+            #region renderers
             // Create and Initialize the axis lines renderer
             var axisLines = ToDispose(new AxisLinesRenderer());
             axisLines.Initialize(this);
@@ -99,7 +108,9 @@ namespace Lights_Materials.Application
             sphere.Initialize(this);
             sphere.World = Matrix.Translation(0, 0, 1.1f);
 
+            #endregion
 
+            # region fps and text
             //// FPS renderer
             FpsRenderer fps = null;
             if (ShowFPS)
@@ -129,48 +140,138 @@ namespace Lights_Materials.Application
                 UpdateText();
 
             }
+            #endregion
 
-            InitializeMatricies();
+            #region events handlers
+
             Window.Resize += Window_Resize;
-            Window.KeyDown += Window_KeyDown;
+            Window.KeyDown += Window_KeyDown; // global events
+            Window.KeyDown += (s, e) => // local events
+            {
+                switch(e.KeyCode )
+                {
+                    case Keys.NumPad1:
+                        axisLines.Show = !axisLines.Show;
+                        break;
+                    case Keys.NumPad2:
+                        quad.Show = !quad.Show;
+                        break;
+                    case Keys.NumPad3:
+                        cube.Show = !cube.Show;
+                        break;
+                    case Keys.NumPad4:
+                        sphere.Show = !sphere.Show;
+                        break;
+                }
+            };
             Window.KeyUp += Window_KeyUp;
             Window.MouseWheel += Window_MouseWheel;
+
+            #endregion
+
+            var clock = new System.Diagnostics.Stopwatch();
+            clock.Start();
+            var perFrame = new ConstantBuffer.PerFrame { };
+
             RenderLoop.Run(Window, () =>
             {
+                #region clear
                 // Clear DSV
                 DeviceManager.Direct3DContext.ClearDepthStencilView(DepthStencilView,
                                                                     DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil,
                                                                     1.0f, 0);
                 // Clear RTV
                 DeviceManager.Direct3DContext.ClearRenderTargetView(RenderTargetView, Color.White);
+                #endregion
 
+                #region initialize postions and matricies
                 // VP matrix
                 var VP = Matrix.Multiply(V, P);
+                // Extract camera postion from view matrix
+                var camPosition = Matrix.Transpose(Matrix.Invert(V)).Column4;
+                var cameraPosition = new Vector3(camPosition.X, camPosition.Y, camPosition.Z);
 
-                // MVP
-                var MVP = M * VP;
+                var time = clock.ElapsedMilliseconds / 1000.0f;
+                if (ctrlKey)
+                {
+                    VP = Matrix.RotationY(time * 1.8f) * Matrix.RotationX(time * 1f) * Matrix.RotationZ(time * 0.6f) * VP;
+                }
+                #endregion
 
-                // Must transpose to use in HLSL
-                MVP.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
+                #region Update per frame constant buffer
+
+                perFrame.CameraPosition = cameraPosition;
+
+                // Configure lights
+                perFrame.Light0.Color =  Color.White;
+                perFrame.Light0.On = lightDirOn ? 1u : 0u;
+
+                perFrame.Light1.Color = Color.Yellow;
+                perFrame.Light1.On = pointLightOn ? 1u : 0u;
+                perFrame.Light2.Color = Color.Fuchsia;
+                perFrame.Light2.On = spotLightOn ? 1u : 0u;
+
+                var lightDir = Vector3.Transform(new Vector3(1f, -1f, 1f), M);
+                var lightDir2 = Vector3.Transform(new Vector3(2,2, -20), M);
+                perFrame.Light0.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
+                perFrame.Light1.Direction = new Vector3(lightDir2.X, lightDir2.Y, lightDir2.Z);
+                perFrame.Light2.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perFrame, perFramecBuffer);
+                #endregion
+
+                #region Update per Material constant buffer
+
+                var perMaterial = new ConstantBuffer.PerMaterial 
+                {
+                     Ambient= new Color4(.2f),
+                     Diffuse= Color.White,
+                     Emissive = Color.Black,
+                     Specular =Color.White,
+                     Shininess=20f,
+                     HasTexture=0,
+                     UVTransform= Matrix.Identity
+                };
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perMaterial, perMaterialcBuffer);
+                #endregion
 
                 // Render our primitives
+
+                // axis lines
+                var W = axisLines.World * M;
+                var perObject = new ConstantBuffer.PerObject
+                {
+                    MVP = W * VP,
+                    M = W,
+                    N = Matrix.Transpose(Matrix.Invert(W)),
+                };
+                perObject.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 axisLines.Render();
 
-                MVP = quad.World * M * VP;
-                MVP.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
+                 //quad
+                perObject.M = quad.World * M;
+                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                perObject.MVP = perObject.M * VP;
+                perObject.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 quad.Render();
 
-                MVP = cube.World * M * VP;
-                MVP.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
+                // cube
+                perObject.M = cube.World * M;
+                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                perObject.MVP = perObject.M * VP;
+                perObject.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 cube.Render();
 
-                MVP = sphere.World * M * VP;
-                MVP.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref MVP, mvpBuffer);
+                // sphere
+                perObject.M = sphere.World * M;
+                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                perObject.MVP = perObject.M * VP;
+                perObject.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 sphere.Render();
+
                 // FPS renderer
                 if (fps != null)
                     fps.Render();
@@ -268,7 +369,6 @@ namespace Lights_Materials.Application
                     useDepthShaders = !useDepthShaders;
                     if (useDepthShaders)
                     {
-                        context.VertexShader.Set(depthVertexShader);
                         context.PixelShader.Set(depthPixelShader);
                     }
                     else
@@ -277,6 +377,30 @@ namespace Lights_Materials.Application
                         context.PixelShader.Set(psShader);
                     }
                     break;
+
+                case Keys.D1:
+                    DeviceManager.Direct3DContext.PixelShader.Set(psShader);
+                    break;
+                case Keys.D2:
+                    DeviceManager.Direct3DContext.PixelShader.Set(diffuseShader);
+                    break;
+                case Keys.D3:
+                    DeviceManager.Direct3DContext.PixelShader.Set(phongShader);
+                    break;
+                case Keys.D4:
+                    DeviceManager.Direct3DContext.PixelShader.Set(blinnShader);
+                    break;
+                case Keys.D5:
+                    lightDirOn = !lightDirOn;
+                    break;
+                case Keys.D6:
+                    pointLightOn = !pointLightOn;
+                    break;
+                case Keys.D7:
+                    spotLightOn = !spotLightOn;
+                    break;
+
+
             }
         }
 
@@ -302,68 +426,67 @@ namespace Lights_Materials.Application
 
             // First release all ressources
             RemoveAndDispose(ref texture2D);
-            RemoveAndDispose(ref vsByteCode);
+
             RemoveAndDispose(ref vsShader);
-            RemoveAndDispose(ref psByteCode);
             RemoveAndDispose(ref psShader);
+            RemoveAndDispose(ref diffuseShader);
+            RemoveAndDispose(ref phongShader);
+            RemoveAndDispose(ref blinnShader);
+            RemoveAndDispose(ref depthPixelShader);
+
             RemoveAndDispose(ref vsLayout);
+
             RemoveAndDispose(ref depthStencilState);
-            RemoveAndDispose(ref mvpBuffer);
+            RemoveAndDispose(ref perObjectcBuffer);
+            RemoveAndDispose(ref perFramecBuffer);
+            RemoveAndDispose(ref perMaterialcBuffer);
 
-
-            RemoveAndDispose(ref )
-            ShaderFlags flag = ShaderFlags.None;
-#if DEBUG
-            flag = ShaderFlags.Debug;
-#endif
+//            ShaderFlags flag = ShaderFlags.None;
+//#if DEBUG
+//            flag = ShaderFlags.Debug;
+//#endif
             var device = deviceManager.Direct3DDevice;
             var context = deviceManager.Direct3DContext;
 
             // Compile and create vs shader 
-            using (vsByteCode = HLSLCompiler.CompileFromFile("Shaders/VS.hlsl", "VSMain", "vs_5_0"))
+            using (var vsByteCode = HLSLCompiler.CompileFromFile("Shaders/VS.hlsl", "VSMain", "vs_5_0"))
             {
                 vsShader = ToDispose(new VertexShader(device, vsByteCode));
+                var input = new[]
+                { 
+                    // Position
+                    new InputElement("SV_Position",0,Format.R32G32B32_Float,0,0),
+                    // Normal
+                    new InputElement("NORMAL",0,Format.R32G32B32_Float,12,0),
+                    // Color
+                    new InputElement("COLOR",0,Format.R8G8B8A8_UNorm,24,0),
+                    // Texture
+                    new InputElement("TEXCOORD",0, Format.R32G32_Float,28,0),
 
-                vsLayout = ToDispose(new InputLayout(device,
-                                    vsByteCode.GetPart(ShaderBytecodePart.InputSignatureBlob),
-                                    new[]{
-                                    new InputElement("SV_Position",0, Format.R32G32B32_Float,0),
-                                    new InputElement("SV_Position",0, Format.R32G32B32_Float,0),
-                                    new InputElement("SV_Position",0, Format.R32G32B32_Float,0),
-                                    new InputElement("SV_Position",0, Format.R32G32B32_Float,0),
-                                    }));
+                };
+                // Initialize vertex layout to match vs input structure
+                // Input structure definition
 
-                using (vsByteCode = HLSLCompiler.CompileFromFile("Shaders/Simple.hlsl", "PSMain", "ps_5_0"))
-                    psShader = ToDispose(new PixelShader(device, psByteCode));
-
-                using (psByteCode = HLSLCompiler.CompileFromFile("Shaders/Depth.hlsl", "PSMain", "ps_5_0"))
-                    psShader = ToDispose(new PixelShader(device, psByteCode));
-
-                using (psByteCode = HLSLCompiler.CompileFromFile("Shaders/Depth.hlsl", "PSMain", "vs_5_0"))
-                    depthVertexShader = ToDispose(new VertexShader(device, psByteCode));
+                vsLayout = ToDispose(new InputLayout(device,vsByteCode.GetPart(ShaderBytecodePart.InputSignatureBlob),input));
 
             }
 
-            // Initialize vertex layout to match vs input structure
-            // Input structure definition
-            var input = new[]
-            { 
-                // Position
-                new InputElement("SV_Position",0,Format.R32G32B32_Float,0,0),
-                // Normal
-                new InputElement("NORMAL",0,Format.R32G32B32_Float,12,0),
-                // Color
-                new InputElement("COLOR",0,Format.R8G8B8A8_UNorm,24,0),
 
-                                // Texture
-                new InputElement("TEXCOORD",0,Format.R32G32_Float,28,0),
+            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/Simple.hlsl", "PSMain", "ps_5_0"))
+                psShader = ToDispose(new PixelShader(device, psByteCode));
 
-            };
-            vsLayout = ToDispose(new InputLayout(device, vsByteCode.GetPart(ShaderBytecodePart.InputSignatureBlob), input));
+            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/Diffuse.hlsl", "PSMain", "ps_5_0"))
+                diffuseShader = ToDispose(new PixelShader(device, psByteCode));
 
-            // Create the constant buffer to store the MVP matrix
+            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/Phong.hlsl", "PSMain", "ps_5_0"))
+                phongShader = ToDispose(new PixelShader(device, psByteCode));
 
-            mvpBuffer = ToDispose(new Buffer(device, Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/BlinnPhong.hlsl", "PSMain", "ps_5_0"))
+                blinnShader = ToDispose(new PixelShader(device, psByteCode));
+
+
+            using (var dsBytecode = HLSLCompiler.CompileFromFile("Shaders/DepthPS.hlsl", "PSMain", "ps_5_0"))
+                depthPixelShader = ToDispose(new PixelShader(device, dsBytecode));
 
             // Create depth stencil state for OM
 
@@ -398,18 +521,37 @@ namespace Lights_Materials.Application
             // Tell IA what vertices will look like
             context.InputAssembler.InputLayout = vsLayout;
 
+            // Create the constants buffers
+            var s = Marshal.SizeOf(typeof(ConstantBuffer.PerFrame));
+            var sz = Utilities.SizeOf<ConstantBuffer.PerFrame>();
+            perObjectcBuffer = ToDispose(new Buffer(device, Utilities.SizeOf<ConstantBuffer.PerObject>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+            perFramecBuffer = ToDispose(new Buffer(device, /*Utilities.SizeOf<ConstantBuffer.PerFrame>()*/s, ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+            perMaterialcBuffer = ToDispose(new Buffer(device, Utilities.SizeOf<ConstantBuffer.PerMaterial>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+
             // Bind buffers to vs
-            context.VertexShader.SetConstantBuffer(0, mvpBuffer);
+            context.VertexShader.SetConstantBuffer(0, perObjectcBuffer);
+            context.VertexShader.SetConstantBuffer(1, perFramecBuffer);
+            context.VertexShader.SetConstantBuffer(2, perMaterialcBuffer);
 
             // Set vs to run
             context.VertexShader.Set(vsShader);
 
             // Set pixel shader to run
+            context.PixelShader.SetConstantBuffer(1, perFramecBuffer);
+            context.PixelShader.SetConstantBuffer(2, perMaterialcBuffer);
             context.PixelShader.Set(psShader);
 
             // Set depth stencil to OM
             context.OutputMerger.DepthStencilState = depthStencilState;
 
+            // Back face culling
+
+            context.Rasterizer.State = ToDispose(new RasterizerState(device, new RasterizerStateDescription
+            {
+                FillMode = FillMode.Solid,
+                CullMode = CullMode.Back,
+                IsFrontCounterClockwise = false
+            }));
             InitializeMatricies();
 
         }
@@ -427,10 +569,8 @@ namespace Lights_Materials.Application
 
             V = Matrix.LookAtLH(camPos, camLookAt, camUp);
 
-
             // Projection matrix
             P = Matrix.PerspectiveFovLH((float)Math.PI / 3f, Width / (float)Height, 0.5f, 100f);
-
 
 
         }
