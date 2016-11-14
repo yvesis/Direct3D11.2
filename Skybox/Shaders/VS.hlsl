@@ -14,10 +14,10 @@ PixelShaderInput VSMain(VertexShaderInput vertex)
 
 	// Transform normal to world space
 	result.WorldNormal = mul(vertex.Normal, ITM);
-	//if (drawSkybox)
+	if (drawSkybox)
 	result.WorldPosition = vertex.Position;// mul(-CameraPosition + vertex.Position, M).xyz;
-	//else
-	//	result.WorldPosition = mul(vertex.Position, M).xyz;
+	else
+		result.WorldPosition = mul(vertex.Position, M).xyz;
 
 	return result;
 }

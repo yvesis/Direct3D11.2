@@ -254,9 +254,9 @@ namespace Skybox.Application
                 perFrame.Light1.On = pointLightOn ? 1u : 0u;
                 perFrame.Light2.Color = Color.Fuchsia;
                 perFrame.Light2.On = spotLightOn ? 1u : 0u;
-
-                var lightDir = Vector3.Transform(new Vector3(1f, -1f, 1f), M);
-                var lightDir2 = Vector3.Transform(new Vector3(2, 2, -20), M);
+                var ligthMat = Matrix.RotationY(360 * time / 1000);
+                var lightDir = Vector3.Transform(new Vector3(1f, 1f, 1f), M * ligthMat);
+                var lightDir2 = Vector3.Transform(new Vector3(2, 2, -2), M * ligthMat);
                 perFrame.Light0.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
                 perFrame.Light1.Direction = new Vector3(lightDir2.X, lightDir2.Y, lightDir2.Z);
                 perFrame.Light2.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
@@ -271,8 +271,8 @@ namespace Skybox.Application
                     Diffuse = Color.White,
                     Emissive = Color.Black,
                     Specular = Color.White,
-                    Shininess = 20f,
-                    HasTexture = 1,
+                    Shininess = 10f,
+                    HasTexture = 0,
                     UVTransform = Matrix.Identity
                 };
                 DeviceManager.Direct3DContext.UpdateSubresource(ref perMaterial, perMaterialcBuffer);
@@ -328,13 +328,13 @@ namespace Skybox.Application
                 DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 cube.Render();
 
-                //// sphere
-                //perObject.M = sphere.World * M;
-                //perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
-                //perObject.MVP = perObject.M * VP;
-                //perObject.Transpose();
-                //DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
-                //sphere.Render();
+                // sphere
+                perObject.M = sphere.World * M;
+                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                perObject.MVP = perObject.M * VP;
+                perObject.Transpose();
+                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
+                sphere.Render();
 
                 // FPS renderer
                 if (fps != null)
@@ -543,7 +543,7 @@ namespace Skybox.Application
             using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/Diffuse.hlsl", "PSMain", "ps_5_0"))
                 diffuseShader = ToDispose(new PixelShader(device, psByteCode));
 
-            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/Phong.hlsl", "PSMain", "ps_5_0"))
+            using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/PhongSkyBox.hlsl", "PSMain", "ps_5_0"))
                 phongShader = ToDispose(new PixelShader(device, psByteCode));
 
             using (var psByteCode = HLSLCompiler.CompileFromFile("Shaders/BlinnPhong.hlsl", "PSMain", "ps_5_0"))
@@ -630,7 +630,7 @@ namespace Skybox.Application
             M = Matrix.Identity;
 
             // View matrix
-            var camPos = new Vector3(0, 0, -2);
+            var camPos = new Vector3(1, 2, -5);
             var camLookAt = Vector3.Zero;
             var camUp = Vector3.UnitY;
 

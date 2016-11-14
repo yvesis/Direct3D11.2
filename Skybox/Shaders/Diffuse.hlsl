@@ -1,10 +1,9 @@
 #include "Common.hlsl"
 
 // global for textures
-//Texture2D Texture0:register(t0);
+Texture2D Texture0:register(t0);
+TextureCube CubeMap : register(t1);
 SamplerState Sampler:register(s0);
-TextureCube CubeMap : register(t0);
-//SamplerState SamplerClamp : register(s0);
 
 
 bool drawSkybox : register(b3);
@@ -18,9 +17,8 @@ float4 PSMain(PixelShaderInput pixel) : SV_Target
 	// Sample texture
 
 	float4 sample = (float4)1.0f;
-	//if (HasTexture)
-	{
-	}
+	if (HasTexture)
+		sample = Texture0.Sample(Sampler, pixel.TextureUV);
 
 	float3 ambient = MaterialAmbient.rgb;
 	float3 emissive = MaterialEmissive.rgb;
@@ -62,9 +60,9 @@ float4 PSMain(PixelShaderInput pixel) : SV_Target
 		diffuse = Lambert(pixel.Diffuse, normal, toLight);
 		float3 spotDir = normalize(float3(Light2.Direction.x, Light2.Direction.y, Light2.Direction.z));
 		float spotCutoff = 30;
-		float spotExponent = 0.000001;
+		float spotExponent = 0.5;
 		float attenuation = SpotLight(normal, toLight, toEye, spotDir, spotCutoff, spotExponent);
-		spotCol = saturate((ambient + diffuse)*sample.rgb)*Light2.Color.rgb* attenuation;
+		spotCol = saturate(( diffuse* attenuation)*sample.rgb)*Light2.Color.rgb;
 	}
 
 

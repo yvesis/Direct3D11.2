@@ -102,7 +102,7 @@ float3 SpotLight(float3 normal, float3 toLight, float3 toEye, float3 spotDir, fl
 	if (cosAngle > cos(radians(spotCutoff)))
 		spotAttenuation = pow(cosAngle, spotExponent);
 
-	return spotAttenuation;
+	return spotAttenuation*ndotl;
 }
 void GetLights(out Light Lights[3])
 {

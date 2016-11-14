@@ -96,7 +96,7 @@ namespace Skybox.Application
         {
             
             var context = DeviceManager.Direct3DContext;
-            context.PixelShader.SetShaderResource(0, textureCube);
+            context.PixelShader.SetShaderResource(1, textureCube);
             context.PixelShader.SetSampler(0, sampler);
 
             context.InputAssembler.PrimitiveTopology = PrimitiveTopology;
