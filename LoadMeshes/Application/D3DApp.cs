@@ -83,7 +83,8 @@ namespace LoadMeshes.Application
             get;
             private set;
         }
-        public override void Run()
+        public bool Running = false;
+        public async override void Run()
         {
             InitializeMatricies();
 
@@ -124,11 +125,12 @@ namespace LoadMeshes.Application
             maleMesh.World = Matrix.Identity;
 
             // Batman
-            loadedMesh = Mesh.LoadFromFile("Models/venus.obj");
+
+            loadedMesh =  Mesh.LoadFromFile("Models/robot3.cmo");//await LoadAsync("Models/robot3.cmo");//
             var batman = ToDispose(new MeshRenderer(loadedMesh.First()));
             batman.Initialize(this);
-            batman.World = Matrix.Identity;// Matrix.Translation(2, 0, 0);
-
+            batman.World = Matrix.RotationX(-60)*Matrix.Scaling(0.05f);// Matrix.Translation(2, 0, 0);
+           
             // vessel
             loadedMesh = Mesh.LoadFromFile("Models/Vessel.cmo");
             var vessel = ToDispose(new MeshRenderer(loadedMesh.First()));
@@ -410,6 +412,10 @@ namespace LoadMeshes.Application
 
 
 
+        }
+        private Task<List<Mesh>> LoadAsync(string file)
+        {
+            return Task.Run(()=>Mesh.LoadFromFile(file));
         }
         void Window_MouseWheel(object sender, MouseEventArgs e)
         {

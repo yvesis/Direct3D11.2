@@ -31,8 +31,9 @@ namespace LoadMeshes
                 app3D.Initialize();
 
                 // Render loop
-
                 app3D.Run();
+
+
             }
         }
     }

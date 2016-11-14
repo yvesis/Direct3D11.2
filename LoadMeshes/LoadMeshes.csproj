@@ -99,11 +99,14 @@
     <MeshContentTask Include="Models\Batman.fbx" />
     <MeshContentTask Include="Models\Vessel.fbx" />
     <None Include="Models\Robot.3DS" />
-    <None Include="Models\Robot.mtl" />
-    <MeshContentTask Include="Models\venus-low.obj" />
-    <MeshContentTask Include="Models\venus.obj">
+    <None Include="Models\robot.mtl" />
+    <None Include="Models\venus-low.obj" />
+    <None Include="Models\venus.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </MeshContentTask>
+    </None>
+    <None Include="Models\robot.obj" />
+    <None Include="Models\robot3.mtl" />
+    <MeshContentTask Include="Models\robot3.obj" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
