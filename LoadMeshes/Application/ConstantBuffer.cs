@@ -68,5 +68,20 @@ namespace LoadMeshes.Application
             Vector3 padding0_;
         }
 
+        public class PerArmature
+        {
+            // max number of bones supported by the shader
+            public const int MAXBONES = 1024;
+            public Matrix[] Bones;
+
+            public PerArmature()
+            {
+                Bones = new Matrix[MAXBONES];
+            }
+            public static int Size()
+            {
+                return Utilities.SizeOf<Matrix>() * MAXBONES;
+            }
+        }
     }
 }

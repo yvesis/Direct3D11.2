@@ -98,12 +98,11 @@
     <MeshContentTask Include="Models\Male_base_mesh.fbx" />
     <MeshContentTask Include="Models\Batman.fbx" />
     <MeshContentTask Include="Models\Vessel.fbx" />
+    <MeshContentTask Include="Models\Character.fbx" />
     <None Include="Models\Robot.3DS" />
     <None Include="Models\robot.mtl" />
     <None Include="Models\venus-low.obj" />
-    <None Include="Models\venus.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Models\venus.obj" />
     <None Include="Models\robot.obj" />
     <None Include="Models\robot3.mtl" />
     <MeshContentTask Include="Models\robot3.obj" />
@@ -127,6 +126,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\Character.png" />
     <Content Include="Shaders\BlinnPhong.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -137,6 +137,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Shaders\Phong.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\VS2.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Shaders\VS.hlsl">

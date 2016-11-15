@@ -43,32 +43,32 @@ float4 PSMain(PixelShaderInput pixel) : SV_Target
 		dirCol = saturate((ambient + diffuse)*sample.rgb)*Light0.Color.rgb;
 	}
 
-	// Point light contribution
-	float3 pointCol = (float3)0;
-	if (Light1.On)
-	{
-		float3 toLight = normalize(Light1.Direction.xyz - pixel.WorldPosition);
-		diffuse = Lambert(pixel.Diffuse, normal, toLight);
-		pointCol = saturate((ambient + diffuse)*sample.rgb)*Light1.Color.rgb;
-	}
+	//// Point light contribution
+	//float3 pointCol = (float3)0;
+	//if (Light1.On)
+	//{
+	//	float3 toLight = normalize(Light1.Direction.xyz - pixel.WorldPosition);
+	//	diffuse = Lambert(pixel.Diffuse, normal, toLight);
+	//	pointCol = saturate((ambient + diffuse)*sample.rgb)*Light1.Color.rgb;
+	//}
 
-	// Spot contribution
-	float3 spotCol = (float3)0;
-	if (Light2.On)
-	{
-		float3 toLight = normalize(Light2.Direction.xyz - pixel.WorldPosition);
-		diffuse = Lambert(pixel.Diffuse, normal, toLight);
-		float3 spotDir = normalize(float3(Light2.Direction.x, Light2.Direction.y, Light2.Direction.z));
-		float spotCutoff = 30;
-		float spotExponent = 0.5;
-		float attenuation = SpotLight(normal, toLight, toEye, spotDir, spotCutoff, spotExponent);
-		spotCol = saturate(( diffuse* attenuation)*sample.rgb)*Light2.Color.rgb;
-	}
+	//// Spot contribution
+	//float3 spotCol = (float3)0;
+	//if (Light2.On)
+	//{
+	//	float3 toLight = normalize(Light2.Direction.xyz - pixel.WorldPosition);
+	//	diffuse = Lambert(pixel.Diffuse, normal, toLight);
+	//	float3 spotDir = normalize(float3(Light2.Direction.x, Light2.Direction.y, Light2.Direction.z));
+	//	float spotCutoff = 30;
+	//	float spotExponent = 0.5;
+	//	float attenuation = SpotLight(normal, toLight, toEye, spotDir, spotCutoff, spotExponent);
+	//	spotCol = saturate(( diffuse* attenuation)*sample.rgb)*Light2.Color.rgb;
+	//}
 
 
 	////final color. we saturate, but do not for HDR rendering
-	////color = saturate((ambient + diffuse)*sample.rgb)*(dirCol+pointCol) + emissive ;
-	color = (dirCol + pointCol + spotCol) + emissive;
+	color = saturate((ambient + diffuse)*sample.rgb)*(Light0.Color.rgb) + emissive ;
+	//color = (dirCol + pointCol + spotCol) + emissive;
 
 
 	//// clamp color

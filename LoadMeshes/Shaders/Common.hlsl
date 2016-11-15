@@ -7,6 +7,8 @@ struct VertexShaderInput
 	float3 Normal:NORMAL;
 	float4 Color:COLOR;
 	float2 TextureUV:TEXCOORD;
+	uint4 Skin: BLENDINDICES;
+	float4 SkinWeights:BLENDWEIGHT;
 };
 
 // Pixel shader input structure
@@ -65,6 +67,11 @@ cbuffer PerMaterial : register(b2)
 	float4x4 UVTransform;
 }
 
+// Constant buffer for vertex skinning
+cbuffer PerArmature:register(b4)
+{
+	float4x4 Bones[1024];
+}
 // Functions definition
 float3 Lambert(float4 pixelDiffuse, float3 normal, float3 toLight)
 {

@@ -53,6 +53,7 @@ namespace LoadMeshes.Application
         private Buffer perFramecBuffer;
         private Buffer perMaterialcBuffer;
         private Buffer perSkyBox;
+        private Buffer perArmaturecBuffer;
 
         bool lightDirOn;
         bool pointLightOn;
@@ -84,7 +85,7 @@ namespace LoadMeshes.Application
             private set;
         }
         public bool Running = false;
-        public async override void Run()
+        public override void Run()
         {
             InitializeMatricies();
 
@@ -119,23 +120,39 @@ namespace LoadMeshes.Application
             #region models/meshes
 
             // Male mesh
-            var loadedMesh = Mesh.LoadFromFile("Models/Male_base_mesh.cmo");
-            var maleMesh = ToDispose(new MeshRenderer(loadedMesh.ToArray()));
-            maleMesh.Initialize(this);
-            maleMesh.World = Matrix.Identity;
+            var loadedMesh = Common.Mesh.LoadFromFile("Models/vessel.cmo");
+            List<MeshRenderer> meshes = new List<MeshRenderer>();
+            meshes.AddRange(loadedMesh.Select(m => ToDispose(new MeshRenderer(m))));
+            meshes.ForEach(m =>
+            {
+                m.Initialize(this);
+                m.World = Matrix.Identity;
+            });
 
-            // Batman
+            // Set the first animation as the current animation and start clock
+            foreach (var m in meshes)
+            {
+                if (m.Mesh.Animations != null && m.Mesh.Animations.Any())
+                    m.CurrentAnimation = m.Mesh.Animations.First().Value;
+                m.Clock.Start();
+            }
+            
+            //loadedMesh = Mesh.LoadFromFile("Models/Male_base_mesh.cmo");
+            //var maleMesh = ToDispose(new MeshRenderer(loadedMesh.First()));
+            //maleMesh.Initialize(this);
+            //maleMesh.World = Matrix.Identity;
 
-            loadedMesh =  Mesh.LoadFromFile("Models/robot3.cmo");//await LoadAsync("Models/robot3.cmo");//
-            var batman = ToDispose(new MeshRenderer(loadedMesh.First()));
-            batman.Initialize(this);
-            batman.World = Matrix.RotationX(-60)*Matrix.Scaling(0.05f);// Matrix.Translation(2, 0, 0);
+            //// Batman
+            //loadedMesh =  Mesh.LoadFromFile("Models/Batman.cmo");//await LoadAsync("Models/robot3.cmo");//
+            //var batman = ToDispose(new MeshRenderer(loadedMesh.First()));
+            //batman.Initialize(this);
+            //batman.World = Matrix.Scaling(0.3f);// Matrix.RotationX(-60) * Matrix.Scaling(1f);// Matrix.Translation(2, 0, 0);
            
-            // vessel
-            loadedMesh = Mesh.LoadFromFile("Models/Vessel.cmo");
-            var vessel = ToDispose(new MeshRenderer(loadedMesh.First()));
-            vessel.Initialize(this);
-            vessel.World = Matrix.Translation(-2, 0, 0) * Matrix.Scaling(0.002f);
+            //// vessel
+            //loadedMesh = Mesh.LoadFromFile("Models/Vessel.cmo");
+            //var vessel = ToDispose(new MeshRenderer(loadedMesh.First()));
+            //vessel.Initialize(this);
+            //vessel.World = Matrix.Translation(-2, 0, 0) * Matrix.Scaling(0.002f);
 
 
             #endregion
@@ -272,16 +289,17 @@ namespace LoadMeshes.Application
                 perFrame.CameraPosition = cameraPosition;
 
                 // Configure lights
-                perFrame.Light0.Color = Color.White;
+
+                perFrame.Light0.Color = new Color(0.8f, 0.8f, 0.8f, 1.0f);
                 perFrame.Light0.On = lightDirOn ? 1u : 0u;
 
-                perFrame.Light1.Color = Color.Yellow;
+                perFrame.Light1.Color = new Color(0.8f, 0.8f, 0.8f, 1.0f);
                 perFrame.Light1.On = pointLightOn ? 1u : 0u;
                 perFrame.Light2.Color = Color.Fuchsia;
                 perFrame.Light2.On = spotLightOn ? 1u : 0u;
                 var ligthMat = Matrix.RotationY(360 * time / 1000);
-                var lightDir = Vector3.Transform(new Vector3(1f, 1f, 1f), M * ligthMat);
-                var lightDir2 = Vector3.Transform(new Vector3(2, 2, -2), M * ligthMat);
+                var lightDir = Vector3.Transform(new Vector3(1f, -1f, -1f), M * ligthMat);
+                var lightDir2 = Vector3.Transform(new Vector3(1f, -1f, -1f), M * ligthMat);
                 perFrame.Light0.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
                 perFrame.Light1.Direction = new Vector3(lightDir2.X, lightDir2.Y, lightDir2.Z);
                 perFrame.Light2.Direction = new Vector3(lightDir.X, lightDir.Y, lightDir.Z);
@@ -319,7 +337,7 @@ namespace LoadMeshes.Application
                 DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
                 var drawSkybox = new ConstantBuffer.DrawSkyBox { On = 1 };
                 DeviceManager.Direct3DContext.UpdateSubresource(ref drawSkybox, perSkyBox);
-                DeviceManager.Direct3DContext.Rasterizer.State = skyBoxState;
+                //DeviceManager.Direct3DContext.Rasterizer.State = skyBoxState;
 
                 skyBox.Render();
 
@@ -330,38 +348,51 @@ namespace LoadMeshes.Application
                 perMaterial.HasTexture = 0;
 
                 #region render meshes
+                foreach(var m in meshes)
+                {
+                    perObject.M = m.World  * M * ligthMat;
+                    perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                    perObject.MVP = perObject.M * VP;
+                    perObject.Transpose();
+                    DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
 
+                    // Provide material constant buffer
+                    m.PerMaterialBuffer = perMaterialcBuffer;
+                    m.PerArmatureBuffer = perArmaturecBuffer;
+                    m.Render();
+
+                }
                 // render male
-                perObject.M = maleMesh.World * ligthMat* M;
-                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
-                perObject.MVP = perObject.M * VP;
-                perObject.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
+                //perObject.M = maleMesh.World * ligthMat* M;
+                //perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                //perObject.MVP = perObject.M * VP;
+                //perObject.Transpose();
+                //DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
+
+                //// Provide material constant buffer
+                //maleMesh.PerMaterialBuffer = perMaterialcBuffer;
+                ////maleMesh.Render();
+
+                //// render batman
+                //perObject.M = batman.World * ligthMat* M;
+                //perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                //perObject.MVP = perObject.M * VP;
+                //perObject.Transpose();
+                //DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
+
+                //// Provide material constant buffer
+                //batman.PerMaterialBuffer = perMaterialcBuffer;
+                //batman.Render();
+
+                //// render vessel
+                //perObject.M = vessel.World * ligthMat * M;
+                //perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
+                //perObject.MVP = perObject.M * VP;
+                //perObject.Transpose();
+                //DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
 
                 // Provide material constant buffer
-                maleMesh.PerMaterialBuffer = perMaterialcBuffer;
-                //maleMesh.Render();
-
-                // render batman
-                perObject.M = batman.World * ligthMat* M;
-                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
-                perObject.MVP = perObject.M * VP;
-                perObject.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
-
-                // Provide material constant buffer
-                batman.PerMaterialBuffer = perMaterialcBuffer;
-                batman.Render();
-
-                // render vessel
-                perObject.M = vessel.World * ligthMat * M;
-                perObject.N = Matrix.Transpose(Matrix.Invert(perObject.M));
-                perObject.MVP = perObject.M * VP;
-                perObject.Transpose();
-                DeviceManager.Direct3DContext.UpdateSubresource(ref perObject, perObjectcBuffer);
-
-                // Provide material constant buffer
-                vessel.PerMaterialBuffer = perMaterialcBuffer;
+                //vessel.PerMaterialBuffer = perMaterialcBuffer;
                 //vessel.Render();
 
                 #endregion
@@ -572,6 +603,7 @@ namespace LoadMeshes.Application
             RemoveAndDispose(ref perFramecBuffer);
             RemoveAndDispose(ref perMaterialcBuffer);
             RemoveAndDispose(ref perSkyBox);
+            RemoveAndDispose(ref perArmaturecBuffer);
 
             //            ShaderFlags flag = ShaderFlags.None;
             //#if DEBUG
@@ -594,6 +626,10 @@ namespace LoadMeshes.Application
                     new InputElement("COLOR",0,Format.R8G8B8A8_UNorm,24,0),
                     // Texture
                     new InputElement("TEXCOORD",0, Format.R32G32_Float,28,0),
+                    // Skinning
+                    new InputElement("BLENDINDICES",0,Format.R32G32B32A32_UInt,36,0),
+                    // Skin weight
+                    new InputElement("BLENDWEIGHT",0,Format.R32G32B32A32_UInt,52,0)
 
                 };
                 // Initialize vertex layout to match vs input structure
@@ -660,11 +696,14 @@ namespace LoadMeshes.Application
             perFramecBuffer = ToDispose(new Buffer(device, /*Utilities.SizeOf<ConstantBuffer.PerFrame>()*/s, ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
             perMaterialcBuffer = ToDispose(new Buffer(device, Utilities.SizeOf<ConstantBuffer.PerMaterial>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
             perSkyBox = ToDispose(new Buffer(device, Utilities.SizeOf<ConstantBuffer.DrawSkyBox>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+            perArmaturecBuffer = ToDispose(new Buffer(device, ConstantBuffer.PerArmature.Size(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0));
+            
             // Bind buffers to vs
             context.VertexShader.SetConstantBuffer(0, perObjectcBuffer);
             context.VertexShader.SetConstantBuffer(1, perFramecBuffer);
             context.VertexShader.SetConstantBuffer(2, perMaterialcBuffer);
             context.VertexShader.SetConstantBuffer(3, perSkyBox);
+            context.VertexShader.SetConstantBuffer(4, perArmaturecBuffer);
             context.PixelShader.SetConstantBuffer(3, perSkyBox);
 
             // Set vs to run
